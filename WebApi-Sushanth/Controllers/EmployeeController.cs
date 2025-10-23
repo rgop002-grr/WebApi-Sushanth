@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using WebApi_Sushanth.Models;
 
 namespace JwtTokenDemo.Controllers
 {
@@ -70,10 +71,5 @@ namespace JwtTokenDemo.Controllers
         }
     }
 
-    // Model for login
-    public class UserLogin
-    {
-        public string Username { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-    }
+    
 }

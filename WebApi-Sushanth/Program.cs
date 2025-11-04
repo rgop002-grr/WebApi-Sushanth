@@ -1,15 +1,20 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
+// Add services to the container
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Secret Key for JWT (you can move this to appsettings.json later)
+var key = "ThisIsMySuperSecretKeyForJwtToken12345";
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -18,6 +23,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Order matters
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

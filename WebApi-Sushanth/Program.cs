@@ -7,7 +7,48 @@ var builder = WebApplication.CreateBuilder(args);
 // ✅ 1️⃣ Add controller services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "JWT Auth Demo API",
+        Version = "v1",
+        Description = "Demo API for JWT Authentication and Authorization"
+    });
+
+    // 🔐 JWT Authentication setup for Swagger
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+
+        // 👇 You can paste only the token (no need to type 'Bearer ')
+        Description = "Enter JWT token below (no need to add 'Bearer ' prefix)."
+    });
+
+    // 🔒 Make sure every endpoint can use the token
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "Bearer",
+                Name = "Bearer",
+                In = Microsoft.OpenApi.Models.ParameterLocation.Header
+            },
+            new string[] {}
+        }
+    });
+});
+
 
 // ✅ 2️⃣ Add Authentication (JWT)
 builder.Services.AddAuthentication(options =>
@@ -56,5 +97,3 @@ app.MapControllers();
 // ✅ 5️⃣ Run
 app.Run();
 
-
-//I am sushanth

@@ -20,7 +20,7 @@ namespace JwtTokenDemo.Controllers
         }
 
         // ✅ 1️⃣ Login endpoint: Generate JWT
-        [AllowAnonymous]
+       
         [HttpPost("login")]
         public IActionResult Login([FromBody] UserLogin userLogin)
         {

@@ -19,18 +19,14 @@ namespace JwtTokenDemo.Controllers
             _config = config;
         }
 
-        // Login endpoint: generate JWT token (no protected endpoints here)
-        [AllowAnonymous]
+        // ✅ 1️⃣ Login endpoint: Generate JWT
+       
         [HttpPost("login")]
         public IActionResult Login([FromBody] UserLogin userLogin)
         {
             if (userLogin == null)
                 return BadRequest(new { message = "Request body is required." });
 
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            // NOTE: Replace this hard-coded check with your real user validation (DB + hashed password)
             if (userLogin.Username == "admin" && userLogin.Password == "password")
             {
                 var token = GenerateJwtToken(userLogin.Username);
@@ -40,16 +36,24 @@ namespace JwtTokenDemo.Controllers
             return Unauthorized(new { message = "Invalid credentials" });
         }
 
-        // Token generation method (keeps it inside controller for demo; you can move to a service)
+        // ✅ 2️⃣ Protected endpoint: Requires valid token
+        [Authorize]
+        [HttpGet("getemployees")]
+        public IActionResult GetEmployees()
+        {
+            var username = User.Identity?.Name; // Extract username from token claim
+            return Ok(new
+            {
+                message = $"Token valid. Welcome {username}!",
+                employees = new[] { "John", "Emma", "David" }
+            });
+        }
+
+        // ✅ 3️⃣ Token generation logic
         private string GenerateJwtToken(string username)
         {
-            // Prefer storing this key in appsettings or environment variables (do NOT hard-code in production)
-            var keyFromConfig = _config["Jwt:Key"];
-            var signingKey = string.IsNullOrWhiteSpace(keyFromConfig)
-                ? "ThisIsMySuperSecretKeyForJwtToken12345" // fallback for quick local testing
-                : keyFromConfig;
-
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey));
+            var key = _config["Jwt:Key"];
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
@@ -59,8 +63,8 @@ namespace JwtTokenDemo.Controllers
             };
 
             var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"] ?? "myApi",
-                audience: _config["Jwt:Audience"] ?? "myApiUsers",
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(30),
                 signingCredentials: credentials
@@ -70,3 +74,4 @@ namespace JwtTokenDemo.Controllers
         }
     }
 }
+
